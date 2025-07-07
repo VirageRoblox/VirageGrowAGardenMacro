@@ -1,6 +1,6 @@
 # Virage Grow A Garden Macro
 A macro for the Roblox game "Grow a Garden"
-
+Current version of this fork: Dino Update
  ## Installation
  - First of all, you need to download [AutoHotKey v1.1](https://www.autohotkey.com/) (Not 2.0), and run the installer
  - Once complete, download the most recent version of the Virage Grow A Garden Macro through the most recent [GitHub Release](https://github.com/VirageRoblox/Virage-Grow-A-Garden-Macro/releases/latest)(Download source code ZIP)
