@@ -65,9 +65,9 @@ global currentShop := ""
 global selectedResolution
 
 global scrollCounts_1080p, scrollCounts_1440p_100, scrollCounts_1440p_125
-scrollCounts_1080p :=       [2, 4, 6, 8, 9, 11, 13, 14, 16, 18, 20, 21, 23, 25, 26, 28, 29, 31]
-scrollCounts_1440p_100 :=   [3, 5, 8, 10, 13, 15, 17, 20, 22, 24, 27, 30, 31, 34, 36, 38, 40, 42]
-scrollCounts_1440p_125 :=   [3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23, 25, 27, 29, 30, 31, 32]
+scrollCounts_1080p :=       [2, 4, 6, 8, 9, 11, 13, 14, 16, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 34, 36, 38, 40]
+scrollCounts_1440p_100 :=   [3, 5, 8, 10, 13, 15, 17, 20, 22, 24, 27, 30, 31, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52]
+scrollCounts_1440p_125 :=   [3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23, 25, 27, 29, 30, 31, 32, 34, 36, 38, 40, 42]
 
 global gearScroll_1080p, toolScroll_1440p_100, toolScroll_1440p_125
 gearScroll_1080p     := [1, 2, 4, 6, 8, 9, 11, 13]
@@ -821,7 +821,7 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
 
 ; item arrays
 
-seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip", "Tomato Seed"
+seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip", "Tomato Seed", "Corn Seed"
              , "Daffodil Seed", "Watermelon Seed", "Pumpkin Seed", "Apple Seed", "Bamboo Seed"
              , "Coconut Seed", "Cactus Seed", "Dragon Fruit Seed", "Mango Seed", "Grape Seed"
              , "Mushroom Seed", "Pepper Seed", "Cacao Seed", "Beanstalk Seed", "Ember Lily"
