@@ -416,6 +416,105 @@ buyUniversal(itemType) {
 
 }
 
+; custom egg shop buyer
+buyEggShop() {
+
+    global selectedEggItems
+    global eggItems
+    global SavedKeybind
+    global currentItem
+
+    if (!selectedEggItems.Length()) {
+        return
+    }
+
+    ; Get positions of selected eggs in the shop
+    selectedPositions := []
+    for i, selectedEgg in selectedEggItems {
+        for j, shopEgg in eggItems {
+            if (selectedEgg = shopEgg) {
+                selectedPositions.Push(j)
+                break
+            }
+        }
+    }
+
+    ; Navigate to first item (NK x3 + Down 2 times)
+    Loop, 3 {
+        sendKeybind(SavedKeybind)
+        sleepAmount(50, 100)
+    }
+    repeatKey("Down", 2)
+
+    ; Press Enter twice to ensure all egg options are closed
+    repeatKey("Enter", 2)
+    sleepAmount(100, 200)
+
+    currentPosition := 1
+
+    ; Process each selected egg by position
+    Loop, % selectedPositions.Length() {
+        targetPosition := selectedPositions[A_Index]
+        currentItem := selectedEggItems[A_Index]
+
+        ; Navigate to target position (2 down presses per egg due to "show pets" buttons)
+        if (targetPosition > currentPosition) {
+            repeatKey("Down", (targetPosition - currentPosition) * 2)
+            sleepAmount(50, 100)
+        } else if (targetPosition < currentPosition) {
+            repeatKey("Up", (currentPosition - targetPosition) * 2)
+            sleepAmount(50, 100)
+        }
+        currentPosition := targetPosition
+
+        ; Open item selection (Enter once)
+        repeatKey("Enter", 1)
+        sleepAmount(100, 200)
+
+        ; Navigate to buy button (Down 2 times)
+        repeatKey("Down", 2)
+        sleepAmount(50, 100)
+
+        ; Check and buy if in stock
+        quickDetect(0x26EE26, 0x1DB31D, 5, 0.4262, 0.2903, 0.6918, 0.8508)
+        sleepAmount(100, 200)
+
+        ; Check if this is the last item
+        if (A_Index = selectedPositions.Length()) {
+            ; Last item: Up once + Enter to close selection
+            repeatKey("Up", 1)
+            sleepAmount(50, 100)
+            repeatKey("Enter", 1)
+            sleepAmount(50, 100)
+        } else {
+            ; Not last item: Down once to next item (from buy button to next egg)
+            repeatKey("Down", 1)
+            sleepAmount(50, 100)
+            currentPosition++
+        }
+    }
+
+    ; Custom egg shop close sequence (NK x4, Right x5, Down x1, Enter x1, NK x1)
+    ; Use longer delays and ensure proper key sending
+    Loop, 4 {
+        sendKeybind(SavedKeybind)
+        sleepAmount(100, 200)
+    }
+    sleepAmount(200, 400)
+
+    Send, {Right 5}
+    sleepAmount(100, 200)
+
+    Send, {Down 1}
+    sleepAmount(100, 200)
+
+    Send, {Enter}
+    sleepAmount(100, 200)
+
+    sendKeybind(SavedKeybind)
+    sleepAmount(100, 200)
+}
+
 ; helper functions
 
 repeatKey(key := "nil", count := 1, delay := 30) {
@@ -536,6 +635,9 @@ dialogueClick(shop) {
     }
     else if (shop = "honey") {
         SafeClickRelative(midX + 0.4, midY)
+    }
+    else if (shop = "egg") {
+        SafeClickRelative(midX + 0.4, midY - 0.4)
     }
 
     Sleep, 500
@@ -750,7 +852,7 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
                 , "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Lightning Rod", "Master Sprinkler"
                 , "Rare Egg", "Legendary Egg", "Mythical Egg", "Bug Egg"
                 , "Flower Seed Pack", "Nectarine Seed", "Hive Fruit Seed", "Honey Sprinkler"
-                , "Bee Egg", "Bee Crate", "Honey Comb", "Bee Chair", "Honey Torch", "Honey Walkway"]
+                , "Bee Crate", "Honey Comb", "Bee Chair", "Honey Torch", "Honey Walkway"]
 
 	ping := false
 
@@ -827,11 +929,11 @@ seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip"
              , "Mushroom Seed", "Pepper Seed", "Cacao Seed", "Beanstalk Seed", "Ember Lily"
              , "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"]
 
-gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler"
+gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat"
              , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
 
 eggItems := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg"
-             , "Bee Egg", "Bug Egg"]
+             , "Bug Egg"]
 
 cosmeticItems := ["Cosmetic 1", "Cosmetic 2", "Cosmetic 3", "Cosmetic 4", "Cosmetic 5"
              , "Cosmetic 6",  "Cosmetic 7", "Cosmetic 8", "Cosmetic 9"]
@@ -2052,51 +2154,43 @@ Return
 
 EggShopPath:
 
-    Sleep, 100
+    eggsCompleted := 0
+
+    ; Navigate to gear shop first
+    hotbarController(0, 1, "0")
     uiUniversal("11110")
-    Sleep, 100
+    sleepAmount(100, 500)
     hotbarController(1, 0, "2")
-    sleepAmount(100, 1000)
+    sleepAmount(100, 500)
     SafeClickRelative(midX, midY)
-    SendDiscordMessage(webhookURL, "**[Egg Cycle]**")
-    Sleep, 800
-
-    ; egg 1 sequence
+    sleepAmount(1200, 2500)
+    ; Walk west to pet shop (0.5 seconds)
     Send, {w Down}
-    Sleep, 800
-    Send {w Up}
-    sleepAmount(500, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 2 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 3 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
+    Sleep, 500
+    Send, {w Up}
+    sleepAmount(100, 500)
     Send, {e}
-    Sleep, 200
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 300
+    sleepAmount(1500, 5000)
+    dialogueClick("egg")
+    SendDiscordMessage(webhookURL, "**[Egg Cycle]**")
+    sleepAmount(2500, 5000)
+    ; checks for the shop opening up to 5 times to ensure it doesn't fail
+    Loop, 5 {
+        if (simpleDetect(0x00CCFF, 10, 0.54, 0.20, 0.65, 0.325)) {
+            ToolTip, Egg Shop Opened
+            SetTimer, HideTooltip, -1500
+            SendDiscordMessage(webhookURL, "Egg Shop Opened.")
+            Sleep, 200
+            buyEggShop()
+            SendDiscordMessage(webhookURL, "Egg Shop Closed.")
+            eggsCompleted = 1
+        }
+        if (eggsCompleted) {
+            break
+        }
+        Sleep, 2000
+    }
 
-    closeRobuxPrompt()
-    sleepAmount(1250, 2500)
     SendDiscordMessage(webhookURL, "**[Eggs Completed]**")
 
 Return
