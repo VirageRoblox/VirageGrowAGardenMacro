@@ -2080,15 +2080,31 @@ Return
 cameraChange:
 
     ; changes camera mode to follow and can be called again to reverse it (0123, 0->3, 3->0)
+    ; Ensure clean state before opening menu
     Send, {Escape}
-    Sleep, 500
+    Sleep, 100
+    Send, {Escape}
+    Sleep, 800
+
+    ; Open menu with proper focus
+    Send, {Escape}
+    Sleep, 800
+
+    ; Navigate to Settings tab with single Tab press
     Send, {Tab}
-    Sleep, 400
-    Send {Down}
+    Sleep, 500
+
+    ; Navigate to camera setting
+    Send, {Down}
+    Sleep, 200
+    Send, {Right}
+    Sleep, 200
+    Send, {Right}
+    Sleep, 200
+
+    ; Close menu
+    Send, {Escape}
     Sleep, 100
-    repeatKey("Right", 2, (SavedSpeed = "Ultra") ? 55 : (SavedSpeed = "Max") ? 60 : 30)
-    Sleep, 100
-    Send {Escape}
 
 Return
 
