@@ -2265,7 +2265,21 @@ GearShopPath:
         if (gearsCompleted) {
             break
         }
+        if (A_Index < 5) {
+            SendDiscordMessage(webhookURL, "Gear Shop detection attempt " . A_Index . " failed, retrying...")
+        }
         Sleep, 2000
+    }
+
+    ; If detection failed but shop might still be working, try to proceed anyway
+    if (!gearsCompleted) {
+        SendDiscordMessage(webhookURL, "Gear Shop detection failed, attempting to proceed anyway...")
+        Sleep, 200
+        uiUniversal("33311443333114405550555", 0)
+        Sleep, 100
+        buyUniversal("gear")
+        gearsCompleted = 1
+        SendDiscordMessage(webhookURL, "Gear Shop completed without detection.")
     }
 
     closeShop("gear", gearsCompleted)
