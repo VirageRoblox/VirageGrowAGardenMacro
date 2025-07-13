@@ -56,6 +56,10 @@ global VERIFIED_KEY  := "VerifiedUser"
 
 global actionQueue := []
 
+; Speed setting - temporarily fixed to Stable only
+global SavedSpeed := "Stable"
+global SavedKeybind
+
 settingsFile := A_ScriptDir "\settings.ini"
 
 ; unused
@@ -527,7 +531,7 @@ repeatKey(key := "nil", count := 1, delay := 30) {
 
     Loop, %count% {
         Send {%key%}
-        Sleep, % (SavedSpeed = "Ultra" ? (delay - 25) : SavedSpeed = "Max" ? (delay - 30) : delay)
+        Sleep, %delay%  ; Using stable delay only
     }
 
 }
@@ -545,7 +549,8 @@ sleepAmount(fastTime, slowTime) {
 
     global SavedSpeed
 
-    Sleep, % (SavedSpeed != "Stable") ? fastTime : slowTime
+    ; Always use slowTime for stable speed
+    Sleep, %slowTime%
 
 }
 
@@ -1178,9 +1183,10 @@ Gui, Add, Edit, x180 y165 w40 h18 Limit1 vSavedKeybind gUpdateKeybind, %SavedKey
     Gui, Font, s8 cD3D3D3 Bold, Segoe UI
     Gui, Add, Text, x50 y190, Macro Speed:
     Gui, Font, s8 cBlack, Segoe UI
-    IniRead, SavedSpeed, %settingsFile%, Main, MacroSpeed, Stable
-    Gui, Add, DropDownList, vSavedSpeed gUpdateSpeed x130 y190 w50, Stable|Fast|Ultra|Max
-    GuiControl, ChooseString, SavedSpeed, %SavedSpeed%
+    ; Temporarily using only Stable speed
+    SavedSpeed := "Stable"
+    IniWrite, %SavedSpeed%, %settingsFile%, Main, MacroSpeed
+    Gui, Add, Text, x130 y190 w50, Stable (Fixed)
 
     Gui, Font, s10 cWhite Bold, Segoe UI
     Gui, Add, Button, x50 y335 w150 h40 gStartScanMultiInstance Background202020, Start Macro (F5)
@@ -1285,22 +1291,9 @@ Return
 
 UpdateSpeed:
 
-    Gui, Submit, NoHide
-
+    ; Speed is now fixed to Stable - no user interaction needed
+    SavedSpeed := "Stable"
     IniWrite, %SavedSpeed%, %settingsFile%, Main, MacroSpeed
-    GuiControl, ChooseString, SavedSpeed, %SavedSpeed%
-    if (SavedSpeed = "Fast") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Use with caution (Requires a stable FPS rate)."
-    }
-    else if (SavedSpeed = "Ultra") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Use at your own risk, high chance of erroring/breaking (Requires a very stable and high FPS rate)."
-    }
-    else if (SavedSpeed = "Max") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Zero delay on UI Navigation inputs, I wouldn't recommend actually using this it's mostly here for fun."
-    }
-    else {
-        MsgBox, 0, Message, % "Macro speed set to " . SavedSpeed . ". Recommended for lower end devices."
-    }
 
 Return
 
@@ -2152,7 +2145,7 @@ characterAlignment:
     Sleep, 10
 
     repeatKey("Right", 3)
-    Loop, % ((SavedSpeed = "Ultra") ? 12 : (SavedSpeed = "Max") ? 18 : 8) {
+    Loop, 8 {  ; Using stable speed loop count
     Send, {Enter}
     Sleep, 10
     repeatKey("Right", 2)
