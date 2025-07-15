@@ -1,5 +1,18 @@
 # Virage's Grow A Garden Macro
 
+## ⚠️ IMPORTANT ANNOUNCEMENT ⚠️
+
+**This AHK script is no longer being updated.** I have found a much better macro (which is also FREE) that I recommend using instead:
+
+**🔗 New Recommended Macro:** https://github.com/epicisgood/Grow-a-Garden-Macro
+**👤 Author:** [@epicisgood](https://github.com/epicisgood)
+
+The reason for discontinuing this project is that maintaining and bug fixing Roblox UI navigation is extremely challenging and time-consuming. The new macro provides better stability and ongoing support.
+
+**Note:** I may help update that script in the future, as the combined work of two developers would be much better than working alone. So make sure to check out [@epicisgood](https://github.com/epicisgood)'s work!
+
+---
+
 An updated, free version of the macro for the Roblox game "Grow a Garden"
 
 Current Version of This Fork: Pet Mutation Update
