@@ -1,25 +1,40 @@
-# Virage Grow A Garden Macro
-A macro for the Roblox game "Grow a Garden"
+# Virage's Grow A Garden Macro
 
- ## Installation
- - First of all, you need to download [AutoHotKey v1.1](https://www.autohotkey.com/) (Not 2.0), and run the installer
- - Once complete, download the most recent version of the Virage Grow A Garden Macro through the most recent [GitHub Release](https://github.com/VirageRoblox/Virage-Grow-A-Garden-Macro/releases/latest)(Download source code ZIP)
- - After downloading, extract the ZIP file to your desired directory
+## ⚠️ IMPORTANT ANNOUNCEMENT ⚠️
 
-Before starting the macro:
-- ensure you **extracted** the macro file
-- **don't** go full screen, be in windowed fullscreen
-- Set your roblox camera mode to the following --> **default(classic)**
-- put "Recall Wrench" in the **2nd hot bar slot** --> macro may bug out and not automatically do it
-- have at least 5-10 things in your hotbar
-- make sure UI Navigation is turned **ON** in your Roblox settings
-- unequip your **“grey mouse” pet** if you have some equipped since they give you a speed bonus that will break the macro
+**This AHK script is no longer being updated.** I have found a much better macro (which is also FREE) that I recommend using instead:
 
-## Features
-Virage Grow A Garden Macro has a couple of different features it is capable of. These include:
-- Automatic buying from all Shops, with the options to check the items you want the macro to purchase
-- Discord Webhook integration
-- Multi-alts macroing
-- Fast mode/Slow mode
+**🔗 New Recommended Macro:** https://github.com/epicisgood/Grow-a-Garden-Macro
+**👤 Author:** [@epicisgood](https://github.com/epicisgood)
 
- Discord Server: [https://discord.com/VirageMacros](https://discord.com/invite/BPPSAG8MN5)
+The reason for discontinuing this project is that maintaining and bug fixing Roblox UI navigation is extremely challenging and time-consuming. The new macro provides better stability and ongoing support.
+
+**Note:** I may help update that script in the future, as the combined work of two developers would be much better than working alone. So make sure to check out [@epicisgood](https://github.com/epicisgood)'s work!
+
+---
+
+An updated, free version of the macro for the Roblox game "Grow a Garden"
+
+Current Version of This Fork: Pet Mutation Update
+
+Confirm These Before Going AFK:
+
+ * If you use auto-align, did it successfully change your camera mode back and forth between default and following the first time it tried to align? If not, simply rerun the macro. This is likely a Roblox-specific issue, or I haven't found a workaround yet.
+
+ * Check if the macro attempts to buy the items you want. Ensure the tooltip displays the correct item name.
+
+Tips if You're Having Issues with the Macro:
+
+ * Try exiting all other applications that use WebView2 before running the macro (e.g., browsers, Discord, Spotify).
+
+ * Try running the macro as an administrator.
+
+ * If the first sequence of tasks runs smoothly, your macro should be fine for AFK use.
+
+ * Strictly follow the instructions in the original repository: Turn off shift lock, set camera mode and movement to default, turn UI navigation on, put the recall wrench in the second slot of your hotbar, fill your hotbar with 8-10 items...
+
+For detailed information, please head to the macro creator's original repository.
+
+Virage's Discord Server: https://discord.com/invite/BPPSAG8MN5
+
+My Discord: https://discord.com/users/468602996389969921

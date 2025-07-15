@@ -56,6 +56,10 @@ global VERIFIED_KEY  := "VerifiedUser"
 
 global actionQueue := []
 
+; Speed setting - temporarily fixed to Stable only
+global SavedSpeed := "Stable"
+global SavedKeybind
+
 settingsFile := A_ScriptDir "\settings.ini"
 
 ; unused
@@ -65,9 +69,9 @@ global currentShop := ""
 global selectedResolution
 
 global scrollCounts_1080p, scrollCounts_1440p_100, scrollCounts_1440p_125
-scrollCounts_1080p :=       [2, 4, 6, 8, 9, 11, 13, 14, 16, 18, 20, 21, 23, 25, 26, 28, 29, 31]
-scrollCounts_1440p_100 :=   [3, 5, 8, 10, 13, 15, 17, 20, 22, 24, 27, 30, 31, 34, 36, 38, 40, 42]
-scrollCounts_1440p_125 :=   [3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23, 25, 27, 29, 30, 31, 32]
+scrollCounts_1080p :=       [2, 4, 6, 8, 9, 11, 13, 14, 16, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 34, 36, 38, 40, 42]
+scrollCounts_1440p_100 :=   [3, 5, 8, 10, 13, 15, 17, 20, 22, 24, 27, 30, 31, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54]
+scrollCounts_1440p_125 :=   [3, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23, 25, 27, 29, 30, 31, 32, 34, 36, 38, 40, 42, 44]
 
 global gearScroll_1080p, toolScroll_1440p_100, toolScroll_1440p_125
 gearScroll_1080p     := [1, 2, 4, 6, 8, 9, 11, 13]
@@ -416,6 +420,105 @@ buyUniversal(itemType) {
 
 }
 
+; custom egg shop buyer
+buyEggShop() {
+
+    global selectedEggItems
+    global eggItems
+    global SavedKeybind
+    global currentItem
+
+    if (!selectedEggItems.Length()) {
+        return
+    }
+
+    ; Get positions of selected eggs in the shop
+    selectedPositions := []
+    for i, selectedEgg in selectedEggItems {
+        for j, shopEgg in eggItems {
+            if (selectedEgg = shopEgg) {
+                selectedPositions.Push(j)
+                break
+            }
+        }
+    }
+
+    ; Navigate to first item (NK x3 + Down 2 times)
+    Loop, 3 {
+        sendKeybind(SavedKeybind)
+        sleepAmount(50, 100)
+    }
+    repeatKey("Down", 2)
+
+    ; Press Enter twice to ensure all egg options are closed
+    repeatKey("Enter", 2)
+    sleepAmount(100, 200)
+
+    currentPosition := 1
+
+    ; Process each selected egg by position
+    Loop, % selectedPositions.Length() {
+        targetPosition := selectedPositions[A_Index]
+        currentItem := selectedEggItems[A_Index]
+
+        ; Navigate to target position (2 down presses per egg due to "show pets" buttons)
+        if (targetPosition > currentPosition) {
+            repeatKey("Down", (targetPosition - currentPosition) * 2)
+            sleepAmount(50, 100)
+        } else if (targetPosition < currentPosition) {
+            repeatKey("Up", (currentPosition - targetPosition) * 2)
+            sleepAmount(50, 100)
+        }
+        currentPosition := targetPosition
+
+        ; Open item selection (Enter once)
+        repeatKey("Enter", 1)
+        sleepAmount(100, 200)
+
+        ; Navigate to buy button (Down 2 times)
+        repeatKey("Down", 2)
+        sleepAmount(50, 100)
+
+        ; Check and buy if in stock
+        quickDetect(0x26EE26, 0x1DB31D, 5, 0.4262, 0.2903, 0.6918, 0.8508)
+        sleepAmount(100, 200)
+
+        ; Check if this is the last item
+        if (A_Index = selectedPositions.Length()) {
+            ; Last item: Up once + Enter to close selection
+            repeatKey("Up", 1)
+            sleepAmount(50, 100)
+            repeatKey("Enter", 1)
+            sleepAmount(50, 100)
+        } else {
+            ; Not last item: Down once to next item (from buy button to next egg)
+            repeatKey("Down", 1)
+            sleepAmount(50, 100)
+            currentPosition++
+        }
+    }
+
+    ; Custom egg shop close sequence (NK x4, Right x5, Down x1, Enter x1, NK x1)
+    ; Use longer delays and ensure proper key sending
+    Loop, 4 {
+        sendKeybind(SavedKeybind)
+        sleepAmount(100, 200)
+    }
+    sleepAmount(200, 400)
+
+    Send, {Right 5}
+    sleepAmount(100, 200)
+
+    Send, {Down 1}
+    sleepAmount(100, 200)
+
+    Send, {Enter}
+    sleepAmount(100, 200)
+
+    sendKeybind(SavedKeybind)
+    sleepAmount(100, 200)
+}
+
 ; helper functions
 
 repeatKey(key := "nil", count := 1, delay := 30) {
@@ -428,7 +531,7 @@ repeatKey(key := "nil", count := 1, delay := 30) {
 
     Loop, %count% {
         Send {%key%}
-        Sleep, % (SavedSpeed = "Ultra" ? (delay - 25) : SavedSpeed = "Max" ? (delay - 30) : delay)
+        Sleep, %delay%  ; Using stable delay only
     }
 
 }
@@ -446,7 +549,8 @@ sleepAmount(fastTime, slowTime) {
 
     global SavedSpeed
 
-    Sleep, % (SavedSpeed != "Stable") ? fastTime : slowTime
+    ; Always use slowTime for stable speed
+    Sleep, %slowTime%
 
 }
 
@@ -536,6 +640,9 @@ dialogueClick(shop) {
     }
     else if (shop = "honey") {
         SafeClickRelative(midX + 0.4, midY)
+    }
+    else if (shop = "egg") {
+        SafeClickRelative(midX + 0.4, midY - 0.4)
     }
 
     Sleep, 500
@@ -746,11 +853,11 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
     
     ; change to whatever you want to be pinged for
     pingItems := ["Bamboo Seed", "Coconut Seed", "Cactus Seed", "Dragon Fruit Seed", "Mango Seed", "Grape Seed", "Mushroom Seed", "Pepper Seed"
-                , "Cacao Seed", "Beanstalk Seed"
+                , "Cacao Seed", "Beanstalk Seed", "Ember Lily", "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"
                 , "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Lightning Rod", "Master Sprinkler"
                 , "Rare Egg", "Legendary Egg", "Mythical Egg", "Bug Egg"
                 , "Flower Seed Pack", "Nectarine Seed", "Hive Fruit Seed", "Honey Sprinkler"
-                , "Bee Egg", "Bee Crate", "Honey Comb", "Bee Chair", "Honey Torch", "Honey Walkway"]
+                , "Bee Crate", "Honey Comb", "Bee Chair", "Honey Torch", "Honey Walkway"]
 
 	ping := false
 
@@ -821,17 +928,17 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
 
 ; item arrays
 
-seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Tomato Seed"
-             , "Cauliflower Seed", "Watermelon Seed", "Rafflesia Seed"
-             , "Green Apple Seed", "Avocado Seed", "Banana Seed", "Pineapple Seed"
-             , "Kiwi Seed", "Bell Pepper Seed", "Prickly Pear Seed", "Loquat Seed"
-             , "Feijoa Seed", "Pitcher Plant", "Sugar Apple"]
+seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip", "Tomato Seed", "Corn Seed"
+             , "Daffodil Seed", "Watermelon Seed", "Pumpkin Seed", "Apple Seed", "Bamboo Seed"
+             , "Coconut Seed", "Cactus Seed", "Dragon Fruit Seed", "Mango Seed", "Grape Seed"
+             , "Mushroom Seed", "Pepper Seed", "Cacao Seed", "Beanstalk Seed", "Ember Lily"
+             , "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"]
 
-gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler"
-             , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
+gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat"
+             , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot", "Levelup Lollipop"]
 
 eggItems := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg"
-             , "Bee Egg", "Bug Egg"]
+             , "Bug Egg"]
 
 cosmeticItems := ["Cosmetic 1", "Cosmetic 2", "Cosmetic 3", "Cosmetic 4", "Cosmetic 5"
              , "Cosmetic 6",  "Cosmetic 7", "Cosmetic 8", "Cosmetic 9"]
@@ -1076,9 +1183,10 @@ Gui, Add, Edit, x180 y165 w40 h18 Limit1 vSavedKeybind gUpdateKeybind, %SavedKey
     Gui, Font, s8 cD3D3D3 Bold, Segoe UI
     Gui, Add, Text, x50 y190, Macro Speed:
     Gui, Font, s8 cBlack, Segoe UI
-    IniRead, SavedSpeed, %settingsFile%, Main, MacroSpeed, Stable
-    Gui, Add, DropDownList, vSavedSpeed gUpdateSpeed x130 y190 w50, Stable|Fast|Ultra|Max
-    GuiControl, ChooseString, SavedSpeed, %SavedSpeed%
+    ; Temporarily using only Stable speed
+    SavedSpeed := "Stable"
+    IniWrite, %SavedSpeed%, %settingsFile%, Main, MacroSpeed
+    Gui, Add, Text, x130 y190 w50, Stable (Fixed)
 
     Gui, Font, s10 cWhite Bold, Segoe UI
     Gui, Add, Button, x50 y335 w150 h40 gStartScanMultiInstance Background202020, Start Macro (F5)
@@ -1183,22 +1291,9 @@ Return
 
 UpdateSpeed:
 
-    Gui, Submit, NoHide
-
+    ; Speed is now fixed to Stable - no user interaction needed
+    SavedSpeed := "Stable"
     IniWrite, %SavedSpeed%, %settingsFile%, Main, MacroSpeed
-    GuiControl, ChooseString, SavedSpeed, %SavedSpeed%
-    if (SavedSpeed = "Fast") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Use with caution (Requires a stable FPS rate)."
-    }
-    else if (SavedSpeed = "Ultra") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Use at your own risk, high chance of erroring/breaking (Requires a very stable and high FPS rate)."
-    }
-    else if (SavedSpeed = "Max") {
-        MsgBox, 0, Disclaimer, % "Macro speed set to " . SavedSpeed . ". Zero delay on UI Navigation inputs, I wouldn't recommend actually using this it's mostly here for fun."
-    }
-    else {
-        MsgBox, 0, Message, % "Macro speed set to " . SavedSpeed . ". Recommended for lower end devices."
-    }
 
 Return
 
@@ -1978,15 +2073,31 @@ Return
 cameraChange:
 
     ; changes camera mode to follow and can be called again to reverse it (0123, 0->3, 3->0)
+    ; Ensure clean state before opening menu
     Send, {Escape}
-    Sleep, 500
+    Sleep, 100
+    Send, {Escape}
+    Sleep, 800
+
+    ; Open menu with proper focus
+    Send, {Escape}
+    Sleep, 800
+
+    ; Navigate to Settings tab with single Tab press
     Send, {Tab}
-    Sleep, 400
-    Send {Down}
+    Sleep, 500
+
+    ; Navigate to camera setting
+    Send, {Down}
+    Sleep, 200
+    Send, {Right}
+    Sleep, 200
+    Send, {Right}
+    Sleep, 200
+
+    ; Close menu
+    Send, {Escape}
     Sleep, 100
-    repeatKey("Right", 2, (SavedSpeed = "Ultra") ? 55 : (SavedSpeed = "Max") ? 60 : 30)
-    Sleep, 100
-    Send {Escape}
 
 Return
 
@@ -2034,7 +2145,7 @@ characterAlignment:
     Sleep, 10
 
     repeatKey("Right", 3)
-    Loop, % ((SavedSpeed = "Ultra") ? 12 : (SavedSpeed = "Max") ? 18 : 8) {
+    Loop, 8 {  ; Using stable speed loop count
     Send, {Enter}
     Sleep, 10
     repeatKey("Right", 2)
@@ -2052,51 +2163,43 @@ Return
 
 EggShopPath:
 
-    Sleep, 100
+    eggsCompleted := 0
+
+    ; Navigate to gear shop first
+    hotbarController(0, 1, "0")
     uiUniversal("11110")
-    Sleep, 100
+    sleepAmount(100, 500)
     hotbarController(1, 0, "2")
-    sleepAmount(100, 1000)
+    sleepAmount(100, 500)
     SafeClickRelative(midX, midY)
-    SendDiscordMessage(webhookURL, "**[Egg Cycle]**")
-    Sleep, 800
-
-    ; egg 1 sequence
+    sleepAmount(1200, 2500)
+    ; Walk west to pet shop (0.5 seconds)
     Send, {w Down}
-    Sleep, 800
-    Send {w Up}
-    sleepAmount(500, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 2 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 3 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
+    Sleep, 500
+    Send, {w Up}
+    sleepAmount(100, 500)
     Send, {e}
-    Sleep, 200
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 300
+    sleepAmount(1500, 5000)
+    dialogueClick("egg")
+    SendDiscordMessage(webhookURL, "**[Egg Cycle]**")
+    sleepAmount(2500, 5000)
+    ; checks for the shop opening up to 5 times to ensure it doesn't fail
+    Loop, 5 {
+        if (simpleDetect(0x00CCFF, 10, 0.54, 0.20, 0.65, 0.325)) {
+            ToolTip, Egg Shop Opened
+            SetTimer, HideTooltip, -1500
+            SendDiscordMessage(webhookURL, "Egg Shop Opened.")
+            Sleep, 200
+            buyEggShop()
+            SendDiscordMessage(webhookURL, "Egg Shop Closed.")
+            eggsCompleted = 1
+        }
+        if (eggsCompleted) {
+            break
+        }
+        Sleep, 2000
+    }
 
-    closeRobuxPrompt()
-    sleepAmount(1250, 2500)
     SendDiscordMessage(webhookURL, "**[Eggs Completed]**")
 
 Return
@@ -2171,7 +2274,21 @@ GearShopPath:
         if (gearsCompleted) {
             break
         }
+        if (A_Index < 5) {
+            SendDiscordMessage(webhookURL, "Gear Shop detection attempt " . A_Index . " failed, retrying...")
+        }
         Sleep, 2000
+    }
+
+    ; If detection failed but shop might still be working, try to proceed anyway
+    if (!gearsCompleted) {
+        SendDiscordMessage(webhookURL, "Gear Shop detection failed, attempting to proceed anyway...")
+        Sleep, 200
+        uiUniversal("33311443333114405550555", 0)
+        Sleep, 100
+        buyUniversal("gear")
+        gearsCompleted = 1
+        SendDiscordMessage(webhookURL, "Gear Shop completed without detection.")
     }
 
     closeShop("gear", gearsCompleted)
