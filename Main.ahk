@@ -720,7 +720,6 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
                 stock := 1
                 ToolTip, %currentItem% `nIn Stock
                 SetTimer, HideTooltip, -1500  
-				Sleep, 1000
                 uiUniversal(50, 0, 1, 1)
                 Sleep, 50
                 if (ping)
@@ -730,28 +729,6 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
             }
         }
     }
-
-    ; for eggs
-	/*
-    if (egg) {
-        PixelSearch, FoundX, FoundY, x1, y1, x2, y2, color1, variation, Fast RGB
-        if (ErrorLevel = 0) {
-            stock := 1
-            ToolTip, %currentItem% `nIn Stock
-            SetTimer, HideTooltip, -1500  
-            uiUniversal(500, 1, 1)
-            Sleep, 50
-            if (ping)
-                SendDiscordMessage(webhookURL, "Bought " . currentItem . ". <@" . discordUserID . ">")
-            else
-                SendDiscordMessage(webhookURL, "Bought " . currentItem . ".")
-        }
-        if (!stock) {
-            uiUniversal(1105, 1, 1)
-            SendDiscordMessage(webhookURL, currentItem . " Not In Stock.")  
-        }
-    }
-	*/
 	
     Sleep, 100
 
