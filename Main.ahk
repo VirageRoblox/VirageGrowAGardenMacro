@@ -977,7 +977,7 @@ ShowGui:
     pingColor := PingSelected ? "c90EE90" : "cD3D3D3"
     Gui, Add, Checkbox, % "x50 y225 vPingSelected gUpdateSettingColor " . pingColor . (PingSelected ? " Checked" : ""), Discord Pings
     
-    IniRead, AutoAlign, %settingsFile%, Main, AutoAlign, 0
+    IniRead, AutoAlign, %settingsFile%, Main, AutoAlign, 1
     autoColor := AutoAlign ? "c90EE90" : "cD3D3D3"
     Gui, Add, Checkbox, % "x50 y250 vAutoAlign gUpdateSettingColor " . autoColor . (AutoAlign ? " Checked" : ""), Auto-Align
 
