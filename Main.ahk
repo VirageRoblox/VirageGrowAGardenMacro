@@ -272,7 +272,6 @@ getMouseCoord(axis) {
 
 ; directional sequence encoder/executor
 ; if you're going to modify the calls to this make sure you know what you're doing (ui navigation has some odd behaviours)
-
 uiUniversal(order := 0, exitUi := 1, continuous := 0, spam := 0, spamCount := 30, delayTime := 50, mode := "universal", index := 0, dir := "nil", itemType := "nil") {
 
     global SavedSpeed
@@ -288,7 +287,7 @@ uiUniversal(order := 0, exitUi := 1, continuous := 0, spam := 0, spamCount := 30
     if (!continuous) {
         sendKeybind(SavedKeybind)
         Sleep, 50
-    }  
+    }
 
     ; right = 1, left = 2, up = 3, down = 4, enter = 0, manual delay = 5
     if (mode = "universal") {
@@ -336,17 +335,27 @@ uiUniversal(order := 0, exitUi := 1, continuous := 0, spam := 0, spamCount := 30
                 }
                 sendCount--
             }
+			if(currentArray.Name = "eggItems") {
+				if(previousIndex = 1){
+					sendCount *= 2
+				}
+				else{
+					sendCount := (sendCount * 2) - 1
+				}
+			}
             repeatKey(dir, sendCount)
             repeatKey("Enter")
             repeatKey(dir)
-            if ((currentArray.Name = "honeyItems") && (index = 1 || index = 10 || index = 12)) {
+            if (((currentArray.Name = "honeyItems") && (index = 1 || index = 10 || index = 12)) || (currentArray.Name = "eggItems")) {
                 repeatKey(dir)
             }
         }
 
     }
     else if (mode = "close") {
-
+		if(currentArray.Name = "eggItems"){
+			index := index * 2
+		}
         if (dir = "up") {
             repeatKey(dir)
             repeatKey("Enter")
@@ -357,7 +366,6 @@ uiUniversal(order := 0, exitUi := 1, continuous := 0, spam := 0, spamCount := 30
             repeatKey("Enter")
             repeatKey(dir)
         }
-
     }
 
     if (exitUi) {
@@ -400,7 +408,7 @@ buyUniversal(itemType) {
     ; buy items
     for i, index in indexArray {
         currentItem := currentSelectedArray[i]
-        Sleep, 50
+		Sleep, 50
         uiUniversal(, 0, 1, , , , "calculate", index, "down", itemType)
         indexItem := currentSelectedArray[i]
         sleepAmount(100, 200)
@@ -537,6 +545,9 @@ dialogueClick(shop) {
     else if (shop = "honey") {
         SafeClickRelative(midX + 0.4, midY)
     }
+    else if (shop = "egg") {
+		SafeClickRelative(midX + 0.35, midY - 0.4)
+    }
 
     Sleep, 500
 
@@ -610,8 +621,11 @@ closeShop(shop, success) {
 
         Sleep, 500
         if (shop = "Honey") {
-        uiUniversal("43333311140320", 1, 1)
+			uiUniversal("43333311140320", 1, 1)
         }
+		else if (shop = "egg"){
+			uiUniversal("1110332211110", 1, 1)
+		}
         else {
             uiUniversal("4330320", 1, 1)
         }
@@ -638,79 +652,6 @@ walkDistance(order := 0, multiplier := 1) {
 sendMessages() {
 
     ; later
-
-}
-
-; color detectors
-
-quickDetectEgg(buyColor, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2Ratio := 1.0, y2Ratio := 1.0) {
-
-    global selectedEggItems
-    global currentItem
-
-    eggsCompleted := 0
-    isSelected := 0
-
-    eggColorMap := Object()
-    eggColorMap["Common Egg"]    := "0xFFFFFF"
-    eggColorMap["Uncommon Egg"]  := "0x81A7D3"
-    eggColorMap["Rare Egg"]      := "0xBB5421"
-    eggColorMap["Legendary Egg"] := "0x2D78A3"
-    eggColorMap["Mythical Egg"]  := "0x00CCFF"
-    eggColorMap["Bug Egg"]       := "0x86FFD5"
-    eggColorMap["Common Summer Egg"]  := "0x00FFFF"
-    eggColorMap["Rare Summer Egg"]  := "0xFBFCA8"
-    eggColorMap["Paradise Egg"]  := "0x32CDFF"
-    eggColorMap["Bee Egg"]  := "0x00ACFF"
-
-    Loop, 5 {
-        for rarity, color in eggColorMap {
-            currentItem := rarity
-            isSelected := 0
-
-            for i, selected in selectedEggItems {
-                if (selected = rarity) {
-                    isSelected := 1
-                    break
-                }
-            }
-
-            ; check for the egg on screen, if its selected it gets bought
-            if (simpleDetect(color, variation, 0.41, 0.32, 0.54, 0.38)) {
-                if (isSelected) {
-                    quickDetect(buyColor, 0, 5, 0.4, 0.60, 0.65, 0.70, 0, 1)
-                    eggsCompleted = 1
-                    break
-                } else {
-                    if (simpleDetect(buyColor, variation, 0.40, 0.60, 0.65, 0.70)) {
-                        ToolTip, % currentItem . "`nIn Stock, Not Selected"
-                        SetTimer, HideTooltip, -1500
-                        SendDiscordMessage(webhookURL, currentItem . " In Stock, Not Selected")
-                    }
-                    else {
-                        ToolTip, % currentItem . "`nNot In Stock, Not Selected"
-                        SetTimer, HideTooltip, -1500
-                        SendDiscordMessage(webhookURL, currentItem . " Not In Stock, Not Selected")
-                    }
-                    uiUniversal(1105, 1, 1)
-                    eggsCompleted = 1
-                    break
-                }
-            }    
-        }
-        ; failsafe
-        if (eggsCompleted) {
-            return
-        }
-        Sleep, 1500
-    }
-    
-    if (!eggsCompleted) {
-        uiUniversal(5, 1, 1)
-        ToolTip, Error In Detection
-        SetTimer, HideTooltip, -1500
-        SendDiscordMessage(webhookURL, "Failed To Detect Any Egg [Error]" . (PingSelected ? " <@" . discordUserID . ">" : ""))
-    }
 
 }
 
@@ -788,27 +729,7 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
             }
         }
     }
-
-    ; for eggs
-    if (egg) {
-        PixelSearch, FoundX, FoundY, x1, y1, x2, y2, color1, variation, Fast RGB
-        if (ErrorLevel = 0) {
-            stock := 1
-            ToolTip, %currentItem% `nIn Stock
-            SetTimer, HideTooltip, -1500  
-            uiUniversal(500, 1, 1)
-            Sleep, 50
-            if (ping)
-                SendDiscordMessage(webhookURL, "Bought " . currentItem . ". <@" . discordUserID . ">")
-            else
-                SendDiscordMessage(webhookURL, "Bought " . currentItem . ".")
-        }
-        if (!stock) {
-            uiUniversal(1105, 1, 1)
-            SendDiscordMessage(webhookURL, currentItem . " Not In Stock.")  
-        }
-    }
-
+	
     Sleep, 100
 
     if (!stock) {
@@ -821,17 +742,20 @@ quickDetect(color1, color2, variation := 10, x1Ratio := 0.0, y1Ratio := 0.0, x2R
 
 ; item arrays
 
-seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Tomato Seed"
-             , "Cauliflower Seed", "Watermelon Seed", "Rafflesia Seed"
-             , "Green Apple Seed", "Avocado Seed", "Banana Seed", "Pineapple Seed"
-             , "Kiwi Seed", "Bell Pepper Seed", "Prickly Pear Seed", "Loquat Seed"
-             , "Feijoa Seed", "Pitcher Plant", "Sugar Apple"]
+seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip"
+             , "Tomato Seed", "Corn Seed", "Daffodil Seed", "Watermelon Seed"
+             , "Pumpkin Seed", "Apple Seed", "Bamboo Seed", "Coconut Seed"
+             , "Cactus Seed", "Dragon Fruit Seed", "Mango Seed", "Grape Seed"
+             , "Mushroom Seed", "Pepper Seed", "Cacao Seed", "Beanstalk Seed"
+             , "Ember Lily Seed", "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"
+             , "Elder Strawberry Seed"]
 
-gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler"
-             , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
+gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat"
+             , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool"
+			 , "Harvest Tool", "Friendship pot", "Levelup Lollipop"]
 
 eggItems := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg"
-             , "Bee Egg", "Bug Egg"]
+             , "Bug Egg"]
 
 cosmeticItems := ["Cosmetic 1", "Cosmetic 2", "Cosmetic 3", "Cosmetic 4", "Cosmetic 5"
              , "Cosmetic 6",  "Cosmetic 7", "Cosmetic 8", "Cosmetic 9"]
@@ -1031,7 +955,7 @@ ShowGui:
     pingColor := PingSelected ? "c90EE90" : "cD3D3D3"
     Gui, Add, Checkbox, % "x50 y225 vPingSelected gUpdateSettingColor " . pingColor . (PingSelected ? " Checked" : ""), Discord Pings
     
-    IniRead, AutoAlign, %settingsFile%, Main, AutoAlign, 0
+    IniRead, AutoAlign, %settingsFile%, Main, AutoAlign, 1
     autoColor := AutoAlign ? "c90EE90" : "cD3D3D3"
     Gui, Add, Checkbox, % "x50 y250 vAutoAlign gUpdateSettingColor " . autoColor . (AutoAlign ? " Checked" : ""), Auto-Align
 
@@ -2051,7 +1975,9 @@ Return
 ; buying paths
 
 EggShopPath:
-
+	
+	eggsCompleted := 0
+	
     Sleep, 100
     uiUniversal("11110")
     Sleep, 100
@@ -2059,44 +1985,37 @@ EggShopPath:
     sleepAmount(100, 1000)
     SafeClickRelative(midX, midY)
     SendDiscordMessage(webhookURL, "**[Egg Cycle]**")
-    Sleep, 800
-
-    ; egg 1 sequence
-    Send, {w Down}
-    Sleep, 800
+    Sleep, 1000
+	Send, {w Down}
+    Sleep, 600
     Send {w Up}
     sleepAmount(500, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 2 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
-    Send {e}
-    Sleep, 100
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 800
-    ; egg 3 sequence
-    Send, {w down}
-    Sleep, 200
-    Send, {w up}
-    sleepAmount(100, 1000)
     Send, {e}
-    Sleep, 200
-    uiUniversal("11114", 0, 0)
-    Sleep, 100
-    quickDetectEgg(0x26EE26, 15, 0.41, 0.65, 0.52, 0.70)
-    Sleep, 300
+    sleepAmount(1500, 5000)
+    dialogueClick("egg")
+	sleepAmount(2500, 5000)
+    ; checks for the shop opening up to 5 times to ensure it doesn't fail
+    Loop, 5 {
+        if (simpleDetect(0x00CCFF, 10, 0.54, 0.20, 0.65, 0.325)) {
+            ToolTip, Egg Shop Opened
+            SetTimer, HideTooltip, -1500
+            SendDiscordMessage(webhookURL, "Egg Shop Opened.")
+            Sleep, 200
+            uiUniversal("33311443333114405550555", 0)
+            Sleep, 100
+            buyUniversal("egg")
+            SendDiscordMessage(webhookURL, "Egg Shop Closed.")
+            eggsCompleted = 1
+        }
+        if (eggsCompleted) {
+            break
+        }
+        Sleep, 2000
+    }
+	
+	closeShop("egg", eggsCompleted)
 
-    closeRobuxPrompt()
-    sleepAmount(1250, 2500)
+    hotbarController(0, 1, "0")
     SendDiscordMessage(webhookURL, "**[Eggs Completed]**")
 
 Return
