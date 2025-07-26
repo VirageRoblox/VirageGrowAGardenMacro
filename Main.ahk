@@ -747,7 +747,8 @@ seedItems := ["Carrot Seed", "Strawberry Seed", "Blueberry Seed", "Orange Tulip"
              , "Pumpkin Seed", "Apple Seed", "Bamboo Seed", "Coconut Seed"
              , "Cactus Seed", "Dragon Fruit Seed", "Mango Seed", "Grape Seed"
              , "Mushroom Seed", "Pepper Seed", "Cacao Seed", "Beanstalk Seed"
-			 , "Ember Lily Seed", "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"]
+             , "Ember Lily Seed", "Sugar Apple", "Burning Bud", "Giant Pinecone Seed"
+             , "Elder Strawberry Seed"]
 
 gearItems := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat"
              , "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool"
